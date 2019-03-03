@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Document</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        #container {
+            max-width: 300px;
+        }
+
+        .handraising {
+            padding: 1rem;
+        }
+
+        .handraising.current {
+            background-color: gold;
+        }
+
+        .handraising.past {
+            background-color: #999;
+            color: #ccc;
+        }
+
+        .handraising.upcoming {
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+    <div id="set-username">
+        <input id="input-username"/>
+        <button id="btn-set-username">Set username</button>
+    </div>
+
+    <div id="application" style="display: none;">
+        <p id="username">?</p>
+        <button onClick="sendMsg()">Raise Hand</button>
+        <button onClick="sendNext()">Next</button>
+        <button onClick="sendPrev()">Previous</button>
+
+        <div id="messages"></div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+<script>
+    let username = "?";
+    const socket = io();
+    let current_id;
+    let handraisings;
+
+    function updateHandraisingList() {
+        const div = document.getElementById('messages');
+        const from = Math.max(current_id - 5, 0);
+        const to = handraisings.length;
+        div.innerHTML = '';
+        for (let i = from; i < current_id; i++) {
+            addHandraising(div, handraisings[i], i, 'past');
+        }
+        if (current_id < handraisings.length) {
+            addHandraising(div, handraisings[current_id], current_id, 'current');
+        }
+        for (let i = current_id + 1; i < to; i++) {
+            addHandraising(div, handraisings[i], i, 'upcoming');
+        }
+    }
+
+    socket.on('status', (data) => {
+        console.log('status', data);
+        current_id = data.current_id;
+        handraisings = data.handraisings;
+        updateHandraisingList();
+    });
+
+    socket.on('raise_hand', (data) => {
+        console.log(data);
+        handraisings.push(data.username);
+        updateHandraisingList();
+    });
+
+    socket.on('goto_id', (data) => {
+        console.log(data);
+        current_id = data.id;
+        updateHandraisingList();
+    });
+
+    document.getElementById('btn-set-username').addEventListener('click', () => {
+        username = document.getElementById('input-username').value;
+        document.getElementById('username').innerText = username;
+        document.getElementById('set-username').style.display = 'none';
+        document.getElementById('application').style.display = 'block';
+    });
+
+    function sendMsg() {
+        socket.emit("raise_hand", {username: username});
+    }
+
+    function sendNext() {
+        socket.emit("next");
+    }
+
+    function sendPrev() {
+        socket.emit("previous");
+    }
+
+    function addHandraising(div, handraising, id, cssClass) {
+        console.log(handraising);
+        div.innerHTML += `<div class="handraising id-${id} ${cssClass}">${handraising}</div>`;
+    }
+</script>
+</body>
+</html>
