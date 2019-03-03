@@ -19,9 +19,7 @@
   "devDependencies": {
     "gulp": "^4.0.0",
     "gulp-typescript": "^5.0.0",
-    "gulp-util": "^3.0.8",
-    "typescript": "^3.3.3333",
-    "watchify": "^3.11.1"
+    "typescript": "^3.3.3333"
   },
   "dependencies": {
     "@types/express": "^4.16.1",
