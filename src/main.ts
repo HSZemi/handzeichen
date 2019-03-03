@@ -46,6 +46,16 @@ io.on("connection", function (socket: socketio.Socket) {
             io.emit('raise_hand', {username: username, id: id_generator++});
         }
     });
+    socket.on('withdraw', (data) => {
+        console.log(data);
+        let username = escapeHtml(data.username);
+        for (let i = current_id; i < handraisings.length; i++) {
+            if (handraisings[i] === username) {
+                handraisings.splice(i, 1);
+            }
+        }
+        io.emit('withdraw', {username: username});
+    });
     socket.on('next', () => {
         console.log('next');
         current_id = Math.min(handraisings.length, current_id + 1);

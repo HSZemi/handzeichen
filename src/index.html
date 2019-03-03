@@ -6,16 +6,32 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <title>Document</title>
     <style>
-        body {
+        html, body {
+            background-color: #333;
             font-family: sans-serif;
         }
 
         #container {
-            max-width: 300px;
+            max-width: 400px;
+        }
+
+        #username {
+            font-weight: bold;
+            color: white;
+        }
+
+        #messages {
+            margin-top: .3rem;
         }
 
         .handraising {
             padding: 1rem;
+            border-radius: .3rem;
+            margin-bottom: .3rem;
+        }
+
+        .handraising.self {
+            font-weight: bold;
         }
 
         .handraising.current {
@@ -41,7 +57,8 @@
 
     <div id="application" style="display: none;">
         <p id="username">?</p>
-        <button onClick="sendMsg()">Raise Hand</button>
+        <button onClick="sendRaise()">Raise Hand</button>
+        <button onClick="sendWithdraw()">Withdraw</button>
         <button onClick="sendNext()">Next</button>
         <button onClick="sendPrev()">Previous</button>
 
@@ -84,6 +101,16 @@
         updateHandraisingList();
     });
 
+    socket.on('withdraw', (data) => {
+        console.log(data);
+        for (let i = current_id; i < handraisings.length; i++) {
+            if (handraisings[i] === data.username) {
+                handraisings.splice(i, 1);
+            }
+        }
+        updateHandraisingList();
+    });
+
     socket.on('goto_id', (data) => {
         console.log(data);
         current_id = data.id;
@@ -97,8 +124,12 @@
         document.getElementById('application').style.display = 'block';
     });
 
-    function sendMsg() {
+    function sendRaise() {
         socket.emit("raise_hand", {username: username});
+    }
+
+    function sendWithdraw() {
+        socket.emit("withdraw", {username: username});
     }
 
     function sendNext() {
@@ -109,9 +140,12 @@
         socket.emit("previous");
     }
 
-    function addHandraising(div, handraising, id, cssClass) {
-        console.log(handraising);
-        div.innerHTML += `<div class="handraising id-${id} ${cssClass}">${handraising}</div>`;
+    function addHandraising(div, handraisingUser, id, cssClass) {
+        console.log(handraisingUser);
+        if(handraisingUser === username){
+            cssClass += " self";
+        }
+        div.innerHTML += `<div class="handraising id-${id} ${cssClass}">${handraisingUser}</div>`;
     }
 </script>
 </body>
