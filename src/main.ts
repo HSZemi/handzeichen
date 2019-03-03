@@ -1,13 +1,14 @@
 import * as express from "express";
 import * as socketio from "socket.io";
 import * as path from "path";
+import {Express} from "express";
 
-const app = express();
+const app: Express = express();
 app.set("port", process.env.PORT || 3000);
 
-let id_generator = 0;
-let current_id = 0;
-let handraisings = [];
+let id_generator: number = 0;
+let current_id: number = 0;
+let handraisings: string[] = [];
 
 let http = require("http").Server(app);
 let io = socketio(http);
@@ -46,7 +47,7 @@ io.on("connection", function (socket: socketio.Socket) {
             io.emit('raise_hand', {username: username, id: id_generator++});
         }
     });
-    socket.on('withdraw', (data) => {
+    socket.on('withdraw', (data: any) => {
         console.log(data);
         let username = escapeHtml(data.username);
         for (let i = current_id; i < handraisings.length; i++) {
